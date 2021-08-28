@@ -22,7 +22,8 @@ export class ProductService {
   }
 
   async findOne(id: number) {
-    return await this.productReposetory.findOne({ id });
+    const product = await this.productReposetory.findOne({ id });
+    return product;
   }
 
   async update(id: number, updateProductDto: UpdateProductDto) {
