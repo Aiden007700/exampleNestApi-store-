@@ -4,41 +4,46 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
-
-  constructor(@InjectRepository(User) private readonly userReposetory: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly userReposetory: Repository<User>,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     if (await this.findOneByEmail(createUserDto.email)) {
-      throw new BadRequestException('user alredy exists')
+      throw new BadRequestException('user alredy exists');
     }
-    const user = this.userReposetory.create(createUserDto)
-    const salt = await bcrypt.genSalt()
-    const hash = await bcrypt.hash(user.password, salt)
-    user.password = hash
-    return await this.userReposetory.save(user)
+    const user = this.userReposetory.create(createUserDto);
+    const salt = await bcrypt.genSalt();
+    const hash = await bcrypt.hash(user.password, salt);
+    user.password = hash;
+    return await this.userReposetory.save(user);
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll() {
+    return await this.userReposetory.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    return await this.userReposetory.findOne({ id });
   }
 
   async findOneByEmail(email: string) {
-    return await this.userReposetory.findOne({email});
+    return await this.userReposetory.findOne({ email });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const _user = await this.userReposetory.findOne({ id });
+    return await this.userReposetory.save({
+      ..._user,
+      ...updateUserDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    return await this.userReposetory.delete({ id });
   }
 }
